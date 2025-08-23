@@ -38,75 +38,53 @@ async function main() {
 
     `;
 
-  const respone = await client.chat.completions.create({
-    model: "gpt-4.1-mini",
-    messages: [
-      {
-        role: "system",
-        content: systemprompt,
-      },
-      {
+    const messages =[
+        {
+            role:'system',
+            content:systemprompt
+        },
+         {
         role: "user",
         content: "user wants me to solve the 4* 18 + 78 * 67 -10",
       },
-      {
-        role: "assistant",
-        content: JSON.stringify({
-          step: "START",
-          content:
-            "The user wants me to solve the expression 4 * 18 + 78 * 67 - 10.",
-        }),
-      },
-      {
-        role: "assistant",
-        content: JSON.stringify({
-          step: "THINK",
-          content:
-            "This is a typical arithmetic expression where the order of operations (BODMAS/BIDMAS) must be applied: first multiplication, then addition and subtraction.",
-        }),
-      },
-      {
-        role: "assistant",
-        content: JSON.stringify({
-          step: "THINK",
-          content:
-            "According to BODMAS, I should first solve the multiplication operations: 4 * 18 and 78 * 67.",
-        }),
-      },
-      {
-        role: "assistant",
-        content: JSON.stringify({
-          step: "THINK",
-          content: "Calculate 4 * 18 which equals 72.",
-        }),
-      },
-      {
-        role:'assistant',
-        content:JSON.stringify({"step":"THINK","content":"Calculate 78 * 67 which equals 5226."})
-      },
-      {
-        role:'assistant',
-        content:JSON.stringify({"step":"THINK","content":"Now the expression becomes 72 + 5226 - 10."})
-      },
-      {
-        role:'assistant',
-        content:JSON.stringify(
-            {"step":"THINK","content":"Next, perform the addition and subtraction from left to right: 72 + 5226 = 5298."}
-        )
-      },
-      {
-        role:'assistant',
-        content:JSON.stringify({"step":"THINK","content":"Now the expression is 5298 - 10."})
-      },
-      {role:'assistant',
-        content:JSON.stringify(
-            {"step":"THINK","content":"Calculate 5298 - 10 which equals 5288."}
-        )
-      }
-    ],
+
+    ];
+
+    while(true){
+         const respone = await client.chat.completions.create({
+    model: "gpt-4.1-mini",
+    messages: messages,
   });
 
-  console.log(respone.choices[0].message.content);
+  const rawContent = respone.choices[0].message.content;
+  const parsecontent = JSON.parse(rawContent);
+
+  messages.push({
+    role:'assistant',
+    content:JSON.stringify(parsecontent)
+  })
+
+   if(parsecontent.step==='START'){
+     console.log(`🔥`,parsecontent.content);
+     continue;
+   }
+
+   if(parsecontent.step==='THINK'){
+     console.log(`🧠`,parsecontent.content);
+     continue;
+   }
+   
+   if(parsecontent.step==='OUTPUT'){
+     console.log(`🤖`,parsecontent.content);
+     break;
+   }
+
+   
+  
 }
 
-main();
+console.log("Done")
+
+}
+
+main()
